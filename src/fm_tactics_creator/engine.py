@@ -171,6 +171,8 @@ def create_tactic(
     mentality: str | None = None,
     team_tackling: str | None = None,
     expected_sha256: str | None = None,
+    receipt: str | Path | None = None,
+    destination_metadata: dict[str, str] | None = None,
 ) -> dict:
     if (
         not name.strip()
@@ -183,7 +185,13 @@ def create_tactic(
     output_path = Path(output).expanduser().absolute()
     if output_path.suffix.lower() != ".fmf":
         raise ValueError("Output filename must end with .fmf.")
-    receipt_path = output_path.with_suffix(".receipt.json")
+    receipt_path = (
+        Path(receipt).expanduser().absolute()
+        if receipt is not None
+        else output_path.with_suffix(".receipt.json")
+    )
+    if receipt_path.resolve() in (source_path, output_path.resolve()):
+        raise ValueError("Receipt must differ from the template and tactic output.")
     if source_path == output_path.resolve():
         raise ValueError("Output must differ from the template.")
     for path in (output_path, receipt_path):
@@ -272,7 +280,12 @@ def create_tactic(
         },
         "created_at": datetime.now(timezone.utc).isoformat(),
     }
+    if destination_metadata:
+        for key in ("destination_mode", "tactics_directory", "output_filename"):
+            if key in destination_metadata:
+                result[key] = destination_metadata[key]
     output_path.parent.mkdir(parents=True, exist_ok=True)
+    receipt_path.parent.mkdir(parents=True, exist_ok=True)
     # Exclusive creation protects both the tactic and its provenance sidecar.
     # A collision never overwrites an existing user file.
     created_receipt = False

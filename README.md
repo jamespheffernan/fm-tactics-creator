@@ -7,23 +7,23 @@ Create a native Football Manager `.fmf` variant from a native template you alrea
 Install the public release:
 
 ```bash
-uv tool install --python 3.12 https://github.com/jamespheffernan/fm-tactics-creator/releases/download/v0.1.0/fm_tactics_creator-0.1.0-py3-none-any.whl
+uv tool install --python 3.12 https://github.com/jamespheffernan/fm-tactics-creator/releases/download/v0.1.1/fm_tactics_creator-0.1.1-py3-none-any.whl
 ```
 
 Install the optional Pi addon:
 
 ```bash
-pi install git:github.com/jamespheffernan/fm-tactics-creator@v0.1.0
+pi install git:github.com/jamespheffernan/fm-tactics-creator@v0.1.1
 ```
 
 Python 3.12 or later is required. You can also install a downloaded wheel with either:
 
 ```bash
-uv tool install ./fm_tactics_creator-0.1.0-py3-none-any.whl
+uv tool install ./fm_tactics_creator-0.1.1-py3-none-any.whl
 ```
 
 ```bash
-python -m pip install ./fm_tactics_creator-0.1.0-py3-none-any.whl
+python -m pip install ./fm_tactics_creator-0.1.1-py3-none-any.whl
 ```
 
 The package installs `cryptography` and `zstandard`. It runs without another project checkout, FM MCP, credentials or an AI account.
@@ -37,6 +37,23 @@ fm-tactics create --template "My template.fmf" --output "My positive tactic.fmf"
 ```
 
 The command writes the new `.fmf` and an adjacent `.receipt.json`. It refuses existing output files and preserves the template. Use `--template-sha256 HASH` to require the exact template returned by inspection. Add `--json` for machine-readable results; failures return JSON on stderr and exit code 2.
+
+## Save directly to FM27
+
+Preview the exact destination, then create the new file:
+
+```bash
+fm-tactics create --template "My template.fmf" --fm27-folder --name "My Positive Tactic" \
+  --mentality positive --tackling stay-on-feet --preview
+fm-tactics create --template "My template.fmf" --fm27-folder --name "My Positive Tactic" \
+  --mentality positive --tackling stay-on-feet
+```
+
+`--fm27-folder` requires `--name` and cannot be combined with `--output`. It uses FM27's platform directory: `~/Library/Application Support/Sports Interactive/Football Manager 27/Tactics` on macOS, `~/Documents/Sports Interactive/Football Manager 27/tactics` on Windows, and `~/.local/share/Sports Interactive/Football Manager 27/tactics` on Linux. The FM27 parent directory must exist; creation can add its missing Tactics child. A missing game directory produces an error rather than selecting another location.
+
+For a custom location, pass `--tactics-dir "/your/FM27/tactics"` or set `FM27_TACTICS_DIR` to that exact existing tactics directory. The flag takes precedence over the environment variable. Template discovery also honors `FM27_TACTICS_DIR`; `templates --directory` overrides it. `--output` continues to use the exact path you supply.
+
+Folder mode derives a single filename from the tactic name, normalizes Unicode, rejects path separators and refuses existing or equivalent filenames. Receipts go into the hidden `.fm-tactics-receipts` child directory. `--output` keeps its adjacent receipt. `--preview --json` reports both paths and the source hash without creating files or directories.
 
 Omit `--mentality` or `--tackling` to inherit that selection. Mentalities are `very-defensive`, `defensive`, `cautious`, `balanced`, `positive`, `attacking` and `very-attacking`. Tackling options are `get-stuck-in`, `stay-on-feet` and `none`; `none` clears both explicit flags and does not assert an effective Standard default.
 
