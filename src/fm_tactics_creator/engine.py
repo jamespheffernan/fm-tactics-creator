@@ -20,6 +20,8 @@ from ._codec.repack import (
     replace_mentality,
 )
 
+from .defensive_line import defensive_line_selection, replace_defensive_line, describe_defensive_line
+
 MAX_TEMPLATE_BYTES = 16 * 1024 * 1024
 MENTALITIES = {
     1: "Very Defensive",
@@ -118,8 +120,10 @@ def inspect_template(path: str | Path) -> dict:
             if value == tackling_selection(tac)[1]
         ),
         "tactical_style": parsed.get("tactical_style", {}).get("value"),
+        **describe_defensive_line(tac),
         "member_sizes": {key: len(value) for key, value in members.items()},
-        "supported_edits": ["name", "mentality", "team_tackling"],
+        "supported_edits": ["name", "mentality", "team_tackling"]
+        + (["defensive_line"] if describe_defensive_line(tac)["defensive_line_state"] == "known" else []),
         "inherited": [
             "formations",
             "phase roles",
@@ -170,6 +174,7 @@ def create_tactic(
     name: str,
     mentality: str | None = None,
     team_tackling: str | None = None,
+    defensive_line: str | None = None,
     expected_sha256: str | None = None,
     receipt: str | Path | None = None,
     destination_metadata: dict[str, str] | None = None,
@@ -208,6 +213,8 @@ def create_tactic(
         if mentality not in MENTALITIES.values():
             raise ValueError("Unsupported mentality.")
         tac = replace_mentality(tac, mentality)
+    if defensive_line is not None:
+        tac = replace_defensive_line(tac, defensive_line)
     if team_tackling is not None:
         tac = replace_tackling(tac, team_tackling)
     aom = before[".aom"]
@@ -238,6 +245,8 @@ def create_tactic(
             restored = replace_mentality(
                 restored, MENTALITIES[original["pre_style_setup"]["mentality_id"]]
             )
+        if defensive_line is not None:
+            restored = replace_defensive_line(restored, defensive_line_selection(before[".tac"])[1])
         if team_tackling is not None:
             original_tackling = next(
                 label
@@ -268,9 +277,12 @@ def create_tactic(
             for label, value in TACKLING_FLAGS.items()
             if value == tackling_selection(tac)[1]
         ),
+        **describe_defensive_line(tac),
+        "defensive_line_mode": "inherit" if defensive_line is None else "explicit_change",
         "edits": ["name"]
         + (["mentality"] if mentality is not None else [])
-        + (["team_tackling"] if team_tackling is not None else []),
+        + (["team_tackling"] if team_tackling is not None else [])
+        + (["defensive_line"] if defensive_line is not None else []),
         "verification": {
             "native_decode_roundtrip": True,
             "all_unrequested_tactic_bytes_preserved": True,

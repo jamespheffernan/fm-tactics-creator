@@ -2,7 +2,7 @@
   "upstream_project": "FM26 Deepener",
   "upstream_revision": "20332fff",
   "license": "Proprietary - copyright James Heffernan 2026",
-  "adaptations": "Package-relative imports; removed checkout bootstrapping, unrelated CLI/report/oracle/player-write code. Retained archive probe/repack and the name/style/setup readers used by this release. Python AST formatting changes only for retained codec functions. Added bounded Zstandard decoding, staged immutable input snapshots, exclusive output/receipt creation and failure cleanup. Reject invalid inner archive headers, unsupported member layouts, duplicate member extensions and mismatched decompressed table sizes.",
+  "adaptations": "Package-relative imports; removed checkout bootstrapping, unrelated CLI/report/oracle/player-write code. Retained archive probe/repack and the name/style/setup readers used by this release. Python AST formatting changes only for retained codec functions. Added bounded Zstandard decoding, staged immutable input snapshots, exclusive output/receipt creation and failure cleanup. Reject invalid inner archive headers, unsupported member layouts, duplicate member extensions and mismatched decompressed table sizes. Added stored defensive-line height selection with mutually exclusive flags, conflict reporting, inherited-byte preservation and optional CLI/Pi editing.",
   "files": [
     {
       "source_file": "scripts/probe_fmf_tactic_archive.py",

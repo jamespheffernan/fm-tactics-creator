@@ -14,10 +14,11 @@ test('folder mode forwards explicit flags without inventing an output path; lega
     writeFileSync(cli, `#!/usr/bin/env node\nimport {appendFileSync} from 'node:fs';\nconst args=process.argv.slice(2);appendFileSync(${JSON.stringify(calls)},JSON.stringify(args)+'\\n');console.log(JSON.stringify(args[0]==='inspect'?{template_sha256:'a'.repeat(64)}:{args}));\n`);
     chmodSync(cli, 0o755);
     process.env.FM_TACTICS_COMMAND = cli;
-    const base = { action: 'create', template_path: '/user/template.fmf', template_sha256: 'a'.repeat(64), name: 'Literal $(name)', mentality: 'positive', tackling: 'stay-on-feet' };
+    const base = { action: 'create', template_path: '/user/template.fmf', template_sha256: 'a'.repeat(64), name: 'Literal $(name)', mentality: 'positive', tackling: 'stay-on-feet', defensive_line: 'higher' };
     const folder = await runTacticCreator({ ...base, fm27_folder: true, tactics_directory: '/user/Custom Tactics', preview: true });
     assert.ok(folder.args.includes('--fm27-folder'));
     assert.ok(folder.args.includes('--preview'));
+    assert.equal(folder.args[folder.args.indexOf('--defensive-line') + 1], 'higher');
     assert.equal(folder.args[folder.args.indexOf('--tactics-dir') + 1], '/user/Custom Tactics');
     assert.ok(!folder.args.includes('--output'));
     assert.equal(folder.args[folder.args.indexOf('--name') + 1], 'Literal $(name)');
@@ -28,6 +29,7 @@ test('folder mode forwards explicit flags without inventing an output path; lega
     await assert.rejects(() => runTacticCreator({ ...base, fm27_folder: true, output_path: '/conflict.fmf' }), /not both/);
     await assert.rejects(() => runTacticCreator({ ...base, output_path: '/chosen.fmf', tactics_directory: '/invalid' }), /requires/);
     await assert.rejects(() => runTacticCreator({ ...base, fm27_folder: true, template_sha256: 'b'.repeat(64) }), /changed/);
+    await assert.rejects(() => runTacticCreator({ ...base, fm27_folder: true, defensive_line: 'standard' }), /Unsupported defensive-line/);
     const recorded = readFileSync(calls, 'utf8').trim().split('\n').map(JSON.parse);
     assert.equal(recorded.filter(args => args[0] === 'create').length, 2);
   } finally {

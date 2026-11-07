@@ -1,29 +1,29 @@
 # FM Tactics Creator
 
-Create a native Football Manager `.fmf` variant from a native template you already own. Change its name, mentality and team tackling selection. Formations, phase roles, player instructions and every unrequested tactic byte stay inherited from the template.
+Create a native Football Manager `.fmf` variant from a native template you already own. Change its name, mentality, team tackling selection and stored defensive-line height. Formations, phase roles, player instructions and every unrequested tactic byte stay inherited from the template.
 
 ## Install
 
 Install the public release:
 
 ```bash
-uv tool install --python 3.12 https://github.com/jamespheffernan/fm-tactics-creator/releases/download/v0.1.1/fm_tactics_creator-0.1.1-py3-none-any.whl
+uv tool install --python 3.12 https://github.com/jamespheffernan/fm-tactics-creator/releases/download/v0.1.2/fm_tactics_creator-0.1.2-py3-none-any.whl
 ```
 
 Install the optional Pi addon:
 
 ```bash
-pi install git:github.com/jamespheffernan/fm-tactics-creator@v0.1.1
+pi install git:github.com/jamespheffernan/fm-tactics-creator@v0.1.2
 ```
 
 Python 3.12 or later is required. You can also install a downloaded wheel with either:
 
 ```bash
-uv tool install ./fm_tactics_creator-0.1.1-py3-none-any.whl
+uv tool install ./fm_tactics_creator-0.1.2-py3-none-any.whl
 ```
 
 ```bash
-python -m pip install ./fm_tactics_creator-0.1.1-py3-none-any.whl
+python -m pip install ./fm_tactics_creator-0.1.2-py3-none-any.whl
 ```
 
 The package installs `cryptography` and `zstandard`. It runs without another project checkout, FM MCP, credentials or an AI account.
@@ -61,10 +61,14 @@ Discover local templates with `fm-tactics templates`, or `fm-tactics templates -
 
 ## Supported scope
 
-This release supports the observed native `cat.` schema 0x44 with source major version 26 or 27. It creates template variants. Custom formations, role changes and broader instruction edits are unsupported.
+This release supports the observed native `cat.` schema 0x44 with source major version 26 or 27. It creates template variants. Custom formations, role changes and team instruction edits beyond tackling and defensive-line height are unsupported.
 
-Every creation checks archive roundtrip and reverses the requested edits to prove that all other tactic bytes survived. The upstream writer was tested with six originals and eighteen variants through the isolated FM27 native body reader to exact EOF, including seven mentalities and all three stored tackling selections. Packaged-product release checks are recorded separately. Native body-reader acceptance is stronger than structural parsing; it remains separate from interactive import and match-engine testing. The tool never launches, controls or writes to a running game.
+Every creation checks archive roundtrip and reverses the requested edits to prove that all other tactic bytes survived. The upstream writer was tested with six originals and eighteen variants through the isolated FM27 native body reader to exact EOF, including seven mentalities and all three stored tackling selections. Those earlier body-reader controls did not include the defensive-line edit. Defensive-line validation includes offline archive roundtrip and exact preservation checks; its interactive game import remains unverified. Packaged-product release checks are recorded separately. Native body-reader acceptance is stronger than structural parsing; it remains separate from interactive import and match-engine testing. The tool never launches, controls or writes to a running game.
 
 ## License
 
 Proprietary software, copyright James Heffernan. See LICENSE. The existing license is preserved; this release does not grant an open-source license. Codec source provenance is recorded in PROVENANCE.json.
+
+Defensive-line height is an optional stored edit: `--defensive-line higher` selects Higher Defensive Line; `much-higher`, `lower` and `much-lower` select the other named heights. Omit the option to inherit. `none` clears the four explicit height flags without asserting an effective Standard/default. `inspect`, template listing, preview and generation receipts report `defensive_line`; preview and receipts distinguish inheritance from an explicit change. Other team selections, including the line of engagement, remain inherited. Use `create --preview` to validate without writing.
+
+If a template stores conflicting defensive-line heights, inspection reports `defensive_line: null` and `defensive_line_state: conflicting_stored_selections`. Unrelated edits and inherited previews preserve those bits. That template’s `supported_edits` omits defensive-line height, and attempts to change it are rejected.

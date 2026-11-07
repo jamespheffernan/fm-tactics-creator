@@ -5,8 +5,8 @@ Create native `.fmf` files from your own template using Pi. This package adds on
 Install the Python wheel supplied with this release into your environment, then install the versioned Pi package directly from GitHub:
 
 ```sh
-python3 -m pip install /path/to/fm_tactics_creator-0.1.1-py3-none-any.whl
-pi install git:github.com/jamespheffernan/fm-tactics-creator@v0.1.1
+python3 -m pip install /path/to/fm_tactics_creator-0.1.2-py3-none-any.whl
+pi install git:github.com/jamespheffernan/fm-tactics-creator@v0.1.2
 ```
 
 Make `fm-tactics` available on `PATH`. If you installed the wheel in a virtual environment, activate that environment before launching Pi, or set `FM_TACTICS_COMMAND` to its `fm-tactics` executable path. The variable names one executable, not a shell command. To install a downloaded, extracted package instead, use `pi install /path/to/pi-fm-tactics-creator`.
@@ -14,7 +14,7 @@ Make `fm-tactics` available on `PATH`. If you installed the wheel in a virtual e
 Try a one-session installation without changing Pi settings:
 
 ```sh
-pi -e git:github.com/jamespheffernan/fm-tactics-creator@v0.1.1
+pi -e git:github.com/jamespheffernan/fm-tactics-creator@v0.1.2
 ```
 
 Example prompt:
@@ -30,3 +30,5 @@ To save directly to FM27 instead of choosing an output path, ask:
 Pi passes `fm27_folder=true`; the CLI derives a safe filename and writes the receipt beneath `.fm-tactics-receipts/`. It uses the platform's FM27 Tactics directory or the explicit `FM27_TACTICS_DIR` environment variable. For a user-specified custom directory, Pi can pass `tactics_directory`. No alternate folder is silently selected, existing names are refused, and `preview=true` checks the planned destination without writing. Creating a file does not import or activate it in the game.
 
 The result contains the output path, receipt path and verification details. The running game is untouched. Native decode and roundtrip checks do not prove that a particular game build will import the file.
+
+The `defensive_line` option accepts `much-higher`, `higher`, `lower`, `much-lower` or `none`. Omit it to inherit. `none` clears explicit height flags without asserting an effective default. Preview reports the stored result and whether it was inherited or explicitly requested; it creates no files.

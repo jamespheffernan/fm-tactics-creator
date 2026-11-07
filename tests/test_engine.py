@@ -55,6 +55,47 @@ class NativeTemplateTests(unittest.TestCase):
         )
         self.assertFalse(result["verification"]["game_load_verified"])
 
+    def test_defensive_line_changes_and_omission_read_back(self):
+        for i, label in enumerate([None, "Higher Defensive Line", "No explicit selection"]):
+            self.output = self.root / f"line-{i}.fmf"
+            result = self.create(defensive_line=label)
+            expected = label if label is not None else engine.inspect_template(self.source)["defensive_line"]
+            self.assertEqual(result["defensive_line"], expected)
+            self.assertEqual(engine.inspect_template(self.output)["defensive_line"], expected)
+            self.assertEqual(result["defensive_line_mode"], "inherit" if label is None else "explicit_change")
+            self.assertEqual("defensive_line" in result["edits"], label is not None)
+            self.assertTrue(result["verification"]["all_unrequested_tactic_bytes_preserved"])
+
+    def test_conflicting_height_preserves_unrelated_operations_and_rejects_edit(self):
+        import json
+        import subprocess
+        import sys
+        members = engine.read_template(self.source)[2]
+        offset, _ = engine.defensive_line_selection(members[".tac"])
+        tac = bytearray(members[".tac"])
+        tac[offset] = (tac[offset] & 0xF0) | 3
+        contradictory = self.root / "conflicting.fmf"
+        engine.repack_native_fmf(self.source, contradictory, plaintext_overrides={".tac": bytes(tac)})
+        self.source = contradictory
+        inspection = engine.inspect_template(self.source)
+        self.assertIsNone(inspection["defensive_line"])
+        self.assertEqual(inspection["defensive_line_state"], "conflicting_stored_selections")
+        self.assertNotIn("defensive_line", inspection["supported_edits"])
+        result = self.create()
+        self.assertIsNone(result["defensive_line"])
+        self.assertEqual(result["defensive_line_mode"], "inherit")
+        self.assertTrue(result["verification"]["all_unrequested_tactic_bytes_preserved"])
+        with self.assertRaisesRegex(ValueError, "contradictory"):
+            self.create(output=self.root / "changed.fmf", defensive_line="Higher Defensive Line")
+        for extra, expected in [([], 0), (["--defensive-line", "higher"], 2)]:
+            run = subprocess.run([sys.executable, "-m", "fm_tactics_creator", "create",
+                "--template", str(self.source), "--output", str(self.root / "preview.fmf"),
+                "--preview", "--json", *extra], capture_output=True, text=True)
+            self.assertEqual(run.returncode, expected, run.stderr)
+            if expected == 0:
+                self.assertIsNone(json.loads(run.stdout)["defensive_line"])
+            self.assertFalse((self.root / "preview.fmf").exists())
+
     def test_existing_output_or_receipt_is_preserved(self):
         self.output.write_bytes(b"keep output")
         with self.assertRaises(FileExistsError):

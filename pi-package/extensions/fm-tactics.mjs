@@ -3,6 +3,7 @@ import { promisify } from 'node:util';
 
 const execFileAsync = promisify(execFile);
 const mentalities = ['very-defensive', 'defensive', 'cautious', 'balanced', 'positive', 'attacking', 'very-attacking'];
+const defensiveLine = ['much-higher', 'higher', 'lower', 'much-lower', 'none'];
 const tackling = ['stay-on-feet', 'get-stuck-in', 'none'];
 
 async function invoke(args, signal) {
@@ -55,6 +56,10 @@ export async function runTacticCreator(params, signal) {
     if (!mentalities.includes(params.mentality)) throw new Error('Unsupported mentality.');
     args.push('--mentality', params.mentality);
   }
+  if (params.defensive_line !== undefined) {
+    if (!defensiveLine.includes(params.defensive_line)) throw new Error('Unsupported defensive-line selection.');
+    args.push('--defensive-line', params.defensive_line);
+  }
   if (params.tackling !== undefined) {
     if (!tackling.includes(params.tackling)) throw new Error('Unsupported tackling selection.');
     args.push('--tackling', params.tackling);
@@ -66,7 +71,7 @@ export default function (pi) {
   pi.registerTool({
     name: 'fm_tactics',
     label: 'FM Tactics Creator',
-    description: 'Inspect a user-supplied native .fmf tactic and create a new standalone native file with a new name, optional mentality and tackling selection. First inspect the template and pass its SHA256 to create. When asked to save it to FM27, set fm27_folder=true and omit output_path: the CLI derives a safe filename in the FM27 Tactics directory, with its receipt in a hidden subdirectory. Other requests use an explicit output_path. Formations, roles and unrequested instructions are inherited. The none tackling selection clears explicit flags; it does not establish an effective default. Requires the standalone fm-tactics CLI. Existing outputs are not overwritten. Does not control a running game or apply a tactic. Decode/roundtrip validation is not proof of in-game import compatibility.',
+    description: 'Inspect a user-supplied native .fmf tactic and create a new standalone native file with a new name, optional mentality, tackling and defensive-line height selections. First inspect the template and pass its SHA256 to create. When asked to save it to FM27, set fm27_folder=true and omit output_path: the CLI derives a safe filename in the FM27 Tactics directory, with its receipt in a hidden subdirectory. Other requests use an explicit output_path. Formations, roles and unrequested instructions are inherited. Omit defensive_line to inherit, or request much-higher/higher/lower/much-lower explicitly. Defensive-line none clears explicit height and does not assert Standard. The none tackling selection clears explicit flags; it does not establish an effective default. Requires the standalone fm-tactics CLI. Existing outputs are not overwritten. Does not control a running game or apply a tactic. Decode/roundtrip validation is not proof of in-game import compatibility.',
     parameters: {
       type: 'object', additionalProperties: false,
       properties: {
@@ -80,6 +85,7 @@ export default function (pi) {
         preview: { type: 'boolean', description: 'If true, validate the source and show planned destination without creating files.' },
         name: { type: 'string', description: 'New tactic name; required to create.' },
         mentality: { type: 'string', enum: mentalities },
+        defensive_line: { type: 'string', enum: defensiveLine, description: 'Omit to inherit the template. none clears explicit height; effective default remains unknown.' },
         tackling: { type: 'string', enum: tackling },
       },
       required: ['action'],

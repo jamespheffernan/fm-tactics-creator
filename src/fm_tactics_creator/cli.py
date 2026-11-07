@@ -71,6 +71,7 @@ def main():
         choices=["get-stuck-in", "stay-on-feet", "none"],
         help="Omit to inherit. none clears both explicit tackling flags; it does not assert a UI default.",
     )
+    creating.add_argument("--defensive-line", choices=["much-higher", "higher", "lower", "much-lower", "none"], help="Omit to inherit. none clears explicit defensive-line height; effective default remains unknown.")
     creating.add_argument("--json", action="store_true")
     args = parser.parse_args()
     try:
@@ -109,7 +110,7 @@ def main():
                 "templates": templates,
                 "excluded": excluded,
                 "searched_directories": [str(p) for p in directories],
-                "supported_edits": ["name", "mentality", "team_tackling"],
+                "supported_edits": ["name", "mentality", "team_tackling", "defensive_line"],
             }
         elif args.command == "inspect":
             result = inspect_template(args.template)
@@ -145,6 +146,7 @@ def main():
                 "stay-on-feet": "Stay On Feet",
                 "none": "No explicit selection",
             }.get(args.tackling)
+            defensive_line = {"much-higher": "Much Higher Defensive Line", "higher": "Higher Defensive Line", "lower": "Lower Defensive Line", "much-lower": "Much Lower Defensive Line", "none": "No explicit selection"}.get(args.defensive_line)
             if args.preview:
                 source = inspect_template(args.template)
                 if (
@@ -154,6 +156,8 @@ def main():
                     raise ValueError(
                         "Template SHA256 changed or does not match. Inspect the template again."
                     )
+                if defensive_line is not None and "defensive_line" not in source["supported_edits"]:
+                    raise ValueError("Template has contradictory stored defensive-line selections.")
                 for destination_path in (plan["output_path"], plan["receipt_path"]):
                     path = Path(destination_path)
                     if path.exists() or path.is_symlink():
@@ -168,6 +172,9 @@ def main():
                     "template_sha256": source["template_sha256"],
                     "mentality": mentality or source["mentality"],
                     "team_tackling": tackling or source["team_tackling"],
+                    "defensive_line": defensive_line if defensive_line is not None else source["defensive_line"],
+                    "defensive_line_state": source["defensive_line_state"],
+                    "defensive_line_mode": "inherit" if defensive_line is None else "explicit_change",
                     "files_created": False,
                 }
             else:
@@ -177,6 +184,7 @@ def main():
                     name=name,
                     mentality=mentality,
                     team_tackling=tackling,
+                    defensive_line=defensive_line,
                     expected_sha256=args.template_sha256,
                     receipt=plan["receipt_path"] if args.fm27_folder else None,
                     destination_metadata=plan if args.fm27_folder else None,
@@ -185,15 +193,15 @@ def main():
             print(json.dumps(result, ensure_ascii=False))
         elif args.command == "create" and args.preview:
             print(
-                f"Preview: {result['output_path']}\nReceipt: {result['receipt_path']}\nNo files created."
+                f"Preview: {result['output_path']}\nDefensive line: {result['defensive_line']} ({result['defensive_line_mode']})\nReceipt: {result['receipt_path']}\nNo files created."
             )
         elif args.command == "create":
             print(
-                f"Created {result['output_path']}\nName: {result['name']}\nMentality: {result['mentality']}\nTackling: {result['team_tackling']}\nReceipt: {result['receipt_path']}\nNative archive roundtrip passed. Interactive FM import was not tested by this command."
+                f"Created {result['output_path']}\nName: {result['name']}\nMentality: {result['mentality']}\nTackling: {result['team_tackling']}\nDefensive line: {result['defensive_line']}\nReceipt: {result['receipt_path']}\nNative archive roundtrip passed. Interactive FM import was not tested by this command."
             )
         elif args.command == "inspect":
             print(
-                f"{result['name']}\nMentality: {result['mentality']}\nTackling: {result['team_tackling']}\nSHA256: {result['template_sha256']}"
+                f"{result['name']}\nMentality: {result['mentality']}\nTackling: {result['team_tackling']}\nDefensive line: {result['defensive_line']}\nSHA256: {result['template_sha256']}"
             )
         else:
             for row in result["templates"]:
