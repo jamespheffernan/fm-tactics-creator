@@ -1,0 +1,9 @@
+{
+  "name": "pi-fm-tactics-creator",
+  "version": "0.1.0",
+  "description": "Portable Pi tool for the standalone FM Tactics Creator CLI.",
+  "type": "module",
+  "keywords": ["pi-package"],
+  "pi": { "extensions": ["./pi-package/extensions/fm-tactics.mjs"] },
+  "engines": { "node": ">=20" }
+}

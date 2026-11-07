@@ -1,0 +1,27 @@
+{
+  "upstream_project": "FM26 Deepener",
+  "upstream_revision": "20332fff",
+  "license": "Proprietary - copyright James Heffernan 2026",
+  "adaptations": "Package-relative imports; removed checkout bootstrapping, unrelated CLI/report/oracle/player-write code. Retained archive probe/repack and the name/style/setup readers used by this release. Python AST formatting changes only for retained codec functions. Added bounded Zstandard decoding, staged immutable input snapshots, exclusive output/receipt creation and failure cleanup. Reject invalid inner archive headers, unsupported member layouts, duplicate member extensions and mismatched decompressed table sizes.",
+  "files": [
+    {
+      "source_file": "scripts/probe_fmf_tactic_archive.py",
+      "source_sha256": "781a61c93cc037dd688b1471756d69542dbcf80a9e14e3457f25f11f26037f7e",
+      "packaged_file": "fm_tactics_creator/_codec/probe.py",
+      "packaged_sha256": "5e9330319010b902c5a145c24cba5b86af7c4aaa01b509f33dfaf7234381bc0e"
+    },
+    {
+      "source_file": "scripts/decode_fmf_tactic.py",
+      "source_sha256": "50e486b6dcf21b826bd12fe03019af87405b41314659caa83ebe5b14511d5ab5",
+      "packaged_file": "fm_tactics_creator/_codec/decode.py",
+      "packaged_sha256": "b3141e3d2af3171a4fa78e74610cd3c66635eab2531a16cd80e3c47a8b4f7621"
+    },
+    {
+      "source_file": "scripts/repack_fmf_tactic.py",
+      "source_sha256": "29cacebb577b6c4eeb9751e3c3138905c8e6f1d0672a4d35306f119324f1dd66",
+      "packaged_file": "fm_tactics_creator/_codec/repack.py",
+      "packaged_sha256": "a302b891b9acb44ebdeb29c230deb840d6f36462ad4c43df6750fed84c64539f"
+    }
+  ],
+  "excluded": "No game binaries/resources, templates, saves, career data, personal paths, credentials or research evidence are distributed."
+}
